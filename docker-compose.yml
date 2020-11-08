@@ -1,0 +1,40 @@
+version: "3.8" # Latest and greatest baby
+
+services:
+    database:
+      image: postgres:12
+      environment:
+        - POSTGRES_USER=${DJANGO_USER}
+        - POSTGRES_PASSWORD=${DJANGO_PASSWORD}
+        - POSTGRES_DB=${DJANGO_DATABASE}
+      ports:
+        - "5432:5432"
+      volumes:
+        - database-volume:/var/lib/postgresql
+    django:
+      build:
+        context: .
+        dockerfile: Dockerfile.django
+      depends_on:
+        - database
+      environment:
+        - DJANGO_USER=${DJANGO_USER}
+        - DJANGO_PASSWORD=${DJANGO_PASSWORD}
+        - DATABASE_NAME=${DJANGO_DATABASE}
+        - PGHOST=${PGHOST}
+      ports:
+        - "8000:8000"
+      # Bindmount for hot reload on django dir
+      volumes:
+       - type: bind
+         source: ./django_files
+         target: /django_files
+
+
+volumes:
+    database-volume:
+
+# networks:
+#     default:
+#       external:
+#         name: application-network

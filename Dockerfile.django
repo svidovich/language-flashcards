@@ -1,0 +1,6 @@
+FROM python:3
+
+RUN pip install django psycopg2-binary django-simple-rest
+
+WORKDIR /django_files/application_manager/
+CMD ["python3", "manage.py", "runserver"]
