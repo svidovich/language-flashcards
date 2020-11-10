@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '^_dfta)%u7%f4@^%768&jkrq%j+i45*-_#b^^e$xv&z_2cq(+7'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+INFO = True
 
 ALLOWED_HOSTS = ['localhost']
 
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'vocabulary',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -131,3 +132,36 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+##############################
+# Custom stuff added by SamV #
+##############################
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'console': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'console'
+        },
+    },
+    'loggers': {
+        'root':{
+            'handlers': ['console'],
+            'propagate': False,
+            'level': 'DEBUG',
+        },
+    },
+}
