@@ -10,3 +10,7 @@ $ source .env
 $ docker-compose build
 $ docker-compose up
 ```
+
+# Progress...
+
+[First Big Boy API call](media/11102020_first_working_with_params.png)
