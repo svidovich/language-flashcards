@@ -8,9 +8,9 @@ class WordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Words
         fields = [
-            'id'
-            'language'
-            'english_version'
-            'translated_version'
-            'definition'
+            'id',
+            'language',
+            'english_version',
+            'translated_version',
+            'definition',
         ]
