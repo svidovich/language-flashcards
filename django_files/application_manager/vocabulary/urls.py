@@ -1,16 +1,14 @@
 from django.contrib import admin
-from django.urls import include, path
-from rest_framework import routers
+from django.urls import path
+from rest_framework.urlpatterns import format_suffix_patterns
 
 from vocabulary import views
 
-router = routers.DefaultRouter()
-router.register(r'vocabulary', views.WordViewSet)
-
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include(router.urls)),  # what does this do
-    path('vocabulary/', include('rest_framework.urls', namespace='rest_framwork'))
+    path('vocabulary/', views.WordList.as_view()),
+    path('vocabulary/word/', views.WordByEnglishVersion.as_view())
 ]
 
+urlpatterns = format_suffix_patterns(urlpatterns)
 
