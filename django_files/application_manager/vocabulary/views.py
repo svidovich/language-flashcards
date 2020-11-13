@@ -1,3 +1,8 @@
+import json
+
+from django.core.exceptions import ValidationError
+from django.db.models.query import QuerySet
+
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -26,22 +31,39 @@ class WordList(APIView):
         # Otherwise tell them they sucked
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class WordByEnglishVersion(APIView):
+class GetWord(APIView):
 
     def get(self, request, format=None):
-        parameters = request.query_params
-        word = []
-        # Downselect by language, if it's there, then by word
-        if language := parameters.get('language'):
-            word = Words.objects.filter(language=language)
-        if english_version := parameters.get('english_version'):
-            word = word.filter(english_version=english_version)
+        parameters: dict = request.query_params.dict()
+        word: QuerySet = Words.objects.filter(**parameters)
         serializer = WordSerializer(word, many=True)
         return Response(serializer.data)
 
-# You can also do it like this. It abstracts away all of the request / response handling logic
-# and does things more concisely, but is fairly opaque.
-from rest_framework import generics
-class WordListGeneric(generics.ListCreateAPIView):
-    queryset = Words.objects.all()
-    serializer_class = WordSerializer
+    def post(self, request, format=None):
+        parameters: dict = request.query_params.dict()
+        try:
+            word = Words(**parameters)
+            word.full_clean()
+            word.save()
+            return Response(status=status.HTTP_201_CREATED)
+        except ValidationError as e:
+            return Response(
+                json.dumps({'code': 400, 'message': e.message_dict}),
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                json.dumps({'code': 400, 'message': f'{e}'}),
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class GetRandomWords(APIView):
+
+    def get(self, request, format=None):
+        parameters: dict = request.query_params.dict()
+        if count := parameters.pop('count', None) is None:
+            return Response(json.dumps({'code': 400, 'message': 'Must specify desired word count'}), status=status.HTTP_400_BAD_REQUEST)
+        word: QuerySet = Words.objects.filter(**parameters).order_by('?')[:count]
+        serializer = WordSerializer(word, many=True)
+        return Response(serializer.data)
