@@ -20,16 +20,6 @@ class WordList(APIView):
         # Return a response object
         return Response(serializer.data)
 
-    def post(self, request, format=None):
-        # Serialize the data from the post
-        serializer = WordSerializer(data=request.data)
-        # Handy!
-        if serializer.is_valid():
-            # If they failed to suck, create the data
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # Otherwise tell them they sucked
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GetWord(APIView):
 
@@ -64,6 +54,6 @@ class GetRandomWords(APIView):
         parameters: dict = request.query_params.dict()
         if count := parameters.pop('count', None) is None:
             return Response(json.dumps({'code': 400, 'message': 'Must specify desired word count'}), status=status.HTTP_400_BAD_REQUEST)
-        word: QuerySet = Words.objects.filter(**parameters).order_by('?')[:count]
+        word: QuerySet = Words.objects.filter(**parameters).order_by('?')[:count+1]
         serializer = WordSerializer(word, many=True)
         return Response(serializer.data)
