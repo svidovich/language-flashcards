@@ -1,1 +1,1 @@
-from .word import *
+from .word import Words, Category

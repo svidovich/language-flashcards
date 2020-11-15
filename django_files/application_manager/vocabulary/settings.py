@@ -10,12 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+import logging
 import os
 from pathlib import Path
 
+logger = logging.getLogger(__name__)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+logger.error(BASE_DIR)
+STATIC_ROOT = os.path.join(BASE_DIR, "static/admin")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
@@ -38,9 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'vocabulary',
+    'django.contrib.sites',
+    # 'django.contrib.sites.models',
     'rest_framework',
+    'vocabulary',
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -92,8 +100,6 @@ DATABASES = {
         'PORT': "5432",
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -151,14 +157,14 @@ LOGGING = {
         },
     },
     'handlers': {
-        'console':{
-            'level':'DEBUG',
-            'class':'logging.StreamHandler',
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
             'formatter': 'console'
         },
     },
     'loggers': {
-        'root':{
+        'root': {
             'handlers': ['console'],
             'propagate': False,
             'level': 'DEBUG',
