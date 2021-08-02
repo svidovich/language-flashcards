@@ -1,1 +1,1 @@
-from .word import Words, Category
+from .word import Category, Languages, Words

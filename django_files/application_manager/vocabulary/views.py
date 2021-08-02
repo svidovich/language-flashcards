@@ -7,8 +7,9 @@ from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from vocabulary.models import Words
+from vocabulary.models import Words, Languages
 from vocabulary.serializers import WordSerializer
+
 
 class WordList(APIView):
 
@@ -25,7 +26,16 @@ class GetWord(APIView):
 
     def get(self, request, format=None):
         parameters: dict = request.query_params.dict()
-        word: QuerySet = Words.objects.filter(**parameters)
+        language = str()
+        try:
+            language: str = parameters.pop('language')
+        except KeyError:
+            return Response(
+                json.dumps({'code': 400, 'message': 'Please specify language field'}),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        language_object: Languages = Languages.objects.get(name=language)
+        word: QuerySet = Words.objects.filter(language=language_object, **parameters)
         serializer = WordSerializer(word, many=True)
         return Response(serializer.data)
 
