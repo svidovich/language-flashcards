@@ -8,22 +8,11 @@ from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from vocabulary.models import Words, Languages
-from vocabulary.serializers import LanguageSeralizer, WordSerializer
+from vocabulary.models import Category, Words, Languages
+from vocabulary.serializers import CategorySerializer, LanguageSeralizer, WordSerializer
 
 
-class WordList(APIView):
-
-    def get(self, request, format=None):
-        # Get all of the words
-        words = Words.objects.all()
-        # Serialize them to JSON
-        serializer = WordSerializer(words, many=True)
-        # Return a response object
-        return Response(serializer.data)
-
-
-class GetWord(APIView):
+class WordOperations(APIView):
 
     def get(self, request, format=None):
         parameters: dict = request.query_params.dict()
@@ -56,6 +45,55 @@ class GetWord(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
+            return Response(
+                {'code': 400, 'message': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class CategoryOperations(APIView):
+    def get(self, request, format=None):
+        parameters: dict = request.query_params.dict()
+        # TODO
+        # The way this works, if I use the all keyword in my request, I'll
+        # get back an array; otherwise if I'm getting a category by name, I'll
+        # get back an object. That is not very consistent; I think I should always
+        # fork over an array. I should talk to an API expert about API design, and
+        # get some opinions.
+        try:
+            if parameters.get('all'):
+                category_queryset: QuerySet = Category.objects.all()
+                return Response(
+                    [
+                        CategorySerializer(category).data for category in category_queryset
+                    ],
+                    status=status.HTTP_200_OK
+                )
+            else:
+                category_name: str = parameters.pop('name')
+                category_object: Category = Category.objects.get(name=category_name, **parameters)
+                return Response(CategorySerializer(category_object).data)
+        except KeyError:
+            return Response(
+                {'code': 400, 'message': 'Please specify name field'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def post(self, request, format=None):
+        parameters: dict = request.query_params.dict()
+        try:
+            category_name: str = parameters.pop('name')
+            Category.objects.create(name=category_name, **parameters)
+            return Response(
+                {'code': 201, 'message': 'SUCCESS'},
+                status=status.HTTP_201_CREATED
+            )
+        except KeyError:
+            return Response(
+                {'code': 400, 'message': 'Please specify name field'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except IntegrityError as e:
             return Response(
                 {'code': 400, 'message': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
@@ -101,7 +139,10 @@ class GetRandomWords(APIView):
     def get(self, request, format=None):
         parameters: dict = request.query_params.dict()
         if count := parameters.pop('count', None) is None:
-            return Response(json.dumps({'code': 400, 'message': 'Must specify desired word count'}), status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'code': 400, 'message': 'Must specify desired word count'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         word: QuerySet = Words.objects.filter(**parameters).order_by('?')[:count+1]
         serializer = WordSerializer(word, many=True)
         return Response(serializer.data)
