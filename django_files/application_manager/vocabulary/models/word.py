@@ -14,8 +14,7 @@ class Languages(models.Model):
 
 class Category(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=200, unique=True)
+    name = models.CharField(max_length=200, unique=True)
     is_active = models.BooleanField(default=True)
     related_words = models.ManyToManyField('Words')
 
