@@ -1,5 +1,7 @@
 import json
 
+from distutils.util import strtobool
+
 from django.core.exceptions import ValidationError
 from django.db.models.query import QuerySet
 from django.db.utils import IntegrityError
@@ -61,7 +63,7 @@ class CategoryOperations(APIView):
         # fork over an array. I should talk to an API expert about API design, and
         # get some opinions.
         try:
-            if parameters.get('all'):
+            if strtobool(parameters.get('all', 'false')):
                 category_queryset: QuerySet = Category.objects.all()
                 return Response(
                     [
