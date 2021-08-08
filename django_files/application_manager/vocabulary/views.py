@@ -106,9 +106,18 @@ class LanguageOperations(APIView):
     def get(self, request, format=None):
         parameters: dict = request.query_params.dict()
         try:
-            language_name: str = parameters.pop('name')
-            language_object = Languages.objects.get(name=language_name, **parameters)
-            return Response(LanguageSeralizer(language_object).data)
+            if strtobool(parameters.get('all', 'false')):
+                language_queryset: QuerySet = Languages.objects.all()
+                return Response(
+                    [
+                        LanguageSeralizer(language).data for language in language_queryset
+                    ],
+                    status=status.HTTP_200_OK
+                )
+            else:
+                language_name: str = parameters.pop('name')
+                language_object = Languages.objects.get(name=language_name, **parameters)
+                return Response(LanguageSeralizer(language_object).data)
         except KeyError:
             return Response(
                 {'code': 400, 'message': 'Please specify name field'},
